@@ -48,9 +48,12 @@ env/
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# Data and models
+# Data and trained models
 data/
-models/
+trained_models/
+saved_models/
+model_outputs/
+glue_results/
 checkpoints/
 *.h5
 *.hdf5
