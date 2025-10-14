@@ -288,20 +288,12 @@ class HallucinationBenchmark:
         negation_score = self.compute_negation_consistency(source, generated)
         structural_score = self.compute_structural_similarity(source, generated)
 
-        # Weighted combination
-        total_symmetry = (
-            α * entity_score +
-            β * predicate_score +
-            γ * negation_score +
-            δ * structural_score
-        )
-
+        # Return metrics (overall_symmetry will be computed via property)
         return SymmetryMetrics(
             entity_overlap=entity_score,
             predicate_overlap=predicate_score,
             negation_consistency=negation_score,
-            structural_similarity=structural_score,
-            total_score=total_symmetry
+            structural_similarity=structural_score
         )
 
     def evaluate_example(self, example: HallucinationExample) -> Dict:
@@ -310,7 +302,7 @@ class HallucinationBenchmark:
 
         # Hallucination detected if symmetry < threshold
         threshold = 0.7
-        detected_hallucination = symmetry.total_score < threshold
+        detected_hallucination = symmetry.overall_symmetry < threshold
 
         correct_detection = detected_hallucination == example.should_detect
 
@@ -467,14 +459,14 @@ class HallucinationBenchmark:
         avg_predicate = np.mean([r['symmetry'].predicate_overlap for r in results])
         avg_negation = np.mean([r['symmetry'].negation_consistency for r in results])
         avg_structural = np.mean([r['symmetry'].structural_similarity for r in results])
-        avg_total = np.mean([r['symmetry'].total_score for r in results])
+        avg_total = np.mean([r['symmetry'].overall_symmetry for r in results])
 
         # Separate metrics for hallucinated vs. correct
         hallucinated = [r for r in results if r['should_detect']]
         correct = [r for r in results if not r['should_detect']]
 
-        avg_symmetry_hallucinated = np.mean([r['symmetry'].total_score for r in hallucinated])
-        avg_symmetry_correct = np.mean([r['symmetry'].total_score for r in correct])
+        avg_symmetry_hallucinated = np.mean([r['symmetry'].overall_symmetry for r in hallucinated])
+        avg_symmetry_correct = np.mean([r['symmetry'].overall_symmetry for r in correct])
 
         # Hallucination rate (false positives + false negatives)
         false_positives = sum(1 for r in results if r['detected_hallucination'] and not r['should_detect'])
@@ -530,7 +522,7 @@ class HallucinationBenchmark:
             type_results[r['hallucination_type']].append(r)
 
         for halluc_type, type_results_list in sorted(type_results.items()):
-            avg_symmetry = np.mean([r['symmetry'].total_score for r in type_results_list])
+            avg_symmetry = np.mean([r['symmetry'].overall_symmetry for r in type_results_list])
             accuracy = np.mean([r['correct_detection'] for r in type_results_list])
             print(f"{halluc_type:25} Symmetry: {avg_symmetry:.3f}  Accuracy: {accuracy:.0%}")
 
@@ -570,7 +562,7 @@ def main():
                 'predicate_overlap': r['symmetry'].predicate_overlap,
                 'negation_consistency': r['symmetry'].negation_consistency,
                 'structural_similarity': r['symmetry'].structural_similarity,
-                'total_score': r['symmetry'].total_score,
+                'overall_symmetry': r['symmetry'].overall_symmetry,
             }
             serializable_results.append(serializable_r)
 

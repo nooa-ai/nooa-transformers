@@ -276,7 +276,7 @@ class GLUEBenchmark:
         # Training arguments
         training_args = TrainingArguments(
             output_dir=f"{self.output_dir}/{task_name}",
-            evaluation_strategy="epoch",
+            eval_strategy="epoch",  # Changed from evaluation_strategy in newer transformers
             save_strategy="epoch",
             learning_rate=self.learning_rate,
             per_device_train_batch_size=self.batch_size,
