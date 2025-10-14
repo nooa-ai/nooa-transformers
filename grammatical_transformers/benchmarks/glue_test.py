@@ -286,6 +286,7 @@ class GLUEBenchmark:
             load_best_model_at_end=True,
             metric_for_best_model=task_config.metric,
             seed=self.seed,
+            report_to="none",  # Disable wandb and other logging integrations
         )
 
         # Create trainer
